@@ -20,6 +20,8 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 /**
  * Helper methods to simplify talking with and parsing responses from a
@@ -42,7 +44,8 @@ public class StockDataHelper {
      * Wiktionary page. Use {@link String#format(String, Object...)} to insert
      * the desired page title after escaping it as needed.
      */
-    private static final String YAHOO_PAGE = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(%22YHOO%22)%0A%09%09&diagnostics=true&env=http%3A%2F%2Fdatatables.org%2Falltables.env";
+    //private static final String YAHOO_PAGE = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(%22YHOO%22)%0A%09%09&format=json&diagnostics=true&env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback=cbfunc";
+    	private static final String YAHOO_PAGE = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(%22YHOO%22)%0A%09%09&format=json&env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback=";
     
     /**
      * Partial URL to append to {@link #WIKTIONARY_PAGE} when you want to expand
@@ -139,13 +142,40 @@ public class StockDataHelper {
         }*/
     }
 
+    private static String convertStreamToString(InputStream is) {
+        /*
+         * To convert the InputStream to String we use the BufferedReader.readLine()
+         * method. We iterate until the BufferedReader return null which means
+         * there's no more data to read. Each line will appended to a StringBuilder
+         * and returned as String.
+         */
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+ 
+        String line = null;
+        try {
+            while ((line = reader.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return sb.toString();
+    }
+    
     /**
      * Pull the raw text content of the given URL. This call blocks until the
      * operation has completed, and is synchronized because it uses a shared
      * buffer {@link #sBuffer}.
      *
      * @param url The exact URL to request.
-     * @return The raw content returned by the server.
+     * @return 
      * @throws ApiException If any connection or server error occurs.
      */
     protected static synchronized String getUrlContent(String url) throws ApiException {
@@ -172,16 +202,32 @@ public class StockDataHelper {
             HttpEntity entity = response.getEntity();
             InputStream inputStream = entity.getContent();
 
-            ByteArrayOutputStream content = new ByteArrayOutputStream();
+            String result= convertStreamToString(inputStream);
+            //Log.i(TAG,result);
+            
+            // A Simple JSONObject Creation
+            JSONObject json;
+			try {
+				
+				json = new JSONObject(result);
+	            Log.i(TAG,"<jsonobject>\n"+json.toString()+"\n</jsonobject>");
 
-            // Read response into a buffered stream
-            int readBytes = 0;
-            while ((readBytes = inputStream.read(sBuffer)) != -1) {
-                content.write(sBuffer, 0, readBytes);
-            }
+	            
+	            JSONObject query =	 json.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
+	            String symbol = query.getString("Open");
+	            Log.i(TAG, "-------------------------------");
+	            Log.i(TAG, "-------------------------------");
+	            Log.i(TAG, "symbol = " + symbol);
+	            Log.i(TAG, "-------------------------------");
+	            Log.i(TAG, "-------------------------------");
+	            
+	            
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 
-            // Return result from buffered stream
-            return new String(content.toByteArray());
+            
+            return null;
         } catch (IOException e) {
             throw new ApiException("Problem communicating with API", e);
         }
