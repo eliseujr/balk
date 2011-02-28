@@ -1,154 +1,37 @@
 package com.balk.bovespatracker;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.Uri;
 import android.util.Log;
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.MalformedURLException;
+import java.net.HttpURLConnection;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-/**
- * Helper methods to simplify talking with and parsing responses from a
- * lightweight Wiktionary API. Before making any requests, you should call
- * {@link #prepareUserAgent(Context)} to generate a User-Agent string based on
- * your application package name and version.
- */
 public class StockDataHelper {
+	
     private static final String TAG = "StockDataHelper";
-
-    /**
-     * Regular expression that splits "Word of the day" entry into word
-     * name, word type, and the first description bullet point.
-     */
-    public static final String WORD_OF_DAY_REGEX =
-            "(?s)\\{\\{wotd\\|(.+?)\\|(.+?)\\|([^#\\|]+).*?\\}\\}";
-
-    /**
-     * Partial URL to use when requesting the detailed entry for a specific
-     * Wiktionary page. Use {@link String#format(String, Object...)} to insert
-     * the desired page title after escaping it as needed.
-     */
-    //private static final String YAHOO_PAGE = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(%22YHOO%22)%0A%09%09&format=json&diagnostics=true&env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback=cbfunc";
-    	private static final String YAHOO_PAGE = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(%22YHOO%22)%0A%09%09&format=json&env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback=";
     
-    /**
-     * Partial URL to append to {@link #WIKTIONARY_PAGE} when you want to expand
-     * any templates found on the requested page. This is useful when browsing
-     * full entries, but may use more network bandwidth.
-     */
-    private static final String WIKTIONARY_EXPAND_TEMPLATES =
-            "&rvexpandtemplates=true";
-
-    /**
-     * {@link StatusLine} HTTP status code when no server error has occurred.
-     */
-    private static final int HTTP_STATUS_OK = 200;
-
-    /**
-     * Shared buffer used by {@link #getUrlContent(String)} when reading results
-     * from an API request.
-     */
-    private static byte[] sBuffer = new byte[512];
-
-    /**
-     * User-agent string to use when making requests. Should be filled using
-     * {@link #prepareUserAgent(Context)} before making any other calls.
-     */
-    private static String sUserAgent = null;
-
-    /**
-     * Thrown when there were problems contacting the remote API server, either
-     * because of a network error, or the server returned a bad status code.
-     */
-    public static class ApiException extends Exception {
-        public ApiException(String detailMessage, Throwable throwable) {
-            super(detailMessage, throwable);
-        }
-
-        public ApiException(String detailMessage) {
-            super(detailMessage);
-        }
-    }
-
-    /**
-     * Thrown when there were problems parsing the response to an API call,
-     * either because the response was empty, or it was malformed.
-     */
-    public static class ParseException extends Exception {
-        public ParseException(String detailMessage, Throwable throwable) {
-            super(detailMessage, throwable);
-        }
-    }
-
-    /**
-     * Prepare the internal User-Agent string for use. This requires a
-     * {@link Context} to pull the package name and version number for this
-     * application.
-     */
-    public static void prepareUserAgent(Context context) {
-        try {
-            // Read package name and version number from manifest
-            PackageManager manager = context.getPackageManager();
-            PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
-            sUserAgent = String.format(context.getString(R.string.template_user_agent),
-                    info.packageName, info.versionName);
-
-        } catch(NameNotFoundException e) {
-            Log.e(TAG, "Couldn't find package information in PackageManager", e);
-        }
-    }
-
-    /**
-     * Read and return the content for a specific Wiktionary page. This makes a
-     * lightweight API call, and trims out just the page content returned.
-     * Because this call blocks until results are available, it should not be
-     * run from a UI thread.
-     *
-     * @param title The exact title of the Wiktionary page requested.
-     * @param expandTemplates If true, expand any wiki templates found.
-     * @return Exact content of page.
-     * @throws ApiException If any connection or server error occurs.
-     * @throws ParseException If there are problems parsing the response.
-     */
-    public static String getPageContent() throws ApiException, ParseException {
-
-        // Query the API for content
-        String content = getUrlContent(YAHOO_PAGE);
-    	return content;
-    	/*
-        try {
-            // Drill into the JSON response to find the content body
-            JSONObject response = new JSONObject(content);
-            return response.toString();
-
-        } catch (JSONException e) {
-            throw new ParseException("Problem parsing API response", e);
-        }*/
+   	private static final String BASE_YQL_URL_BEGINING = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(";
+   	private static final String BASE_YQL_URL_END = "%22)%0A%09%09&format=json&env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback=";
+    
+    public static URL createYQLUrl(String stockSymbol) {
+    	URL yqlUrl = null;
+    	
+    	try {
+    		yqlUrl = new URL(BASE_YQL_URL_BEGINING + "%22" + stockSymbol + BASE_YQL_URL_END);
+    	} catch (MalformedURLException e) {
+    		e.printStackTrace();
+    	}
+    		
+    	return yqlUrl;
     }
 
     private static String convertStreamToString(InputStream is) {
-        /*
-         * To convert the InputStream to String we use the BufferedReader.readLine()
-         * method. We iterate until the BufferedReader return null which means
-         * there's no more data to read. Each line will appended to a StringBuilder
-         * and returned as String.
-         */
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
  
@@ -169,67 +52,35 @@ public class StockDataHelper {
         return sb.toString();
     }
     
-    /**
-     * Pull the raw text content of the given URL. This call blocks until the
-     * operation has completed, and is synchronized because it uses a shared
-     * buffer {@link #sBuffer}.
-     *
-     * @param url The exact URL to request.
-     * @return 
-     * @throws ApiException If any connection or server error occurs.
-     */
-    protected static synchronized String getUrlContent(String url) throws ApiException {
-        if (sUserAgent == null) {
-            throw new ApiException("User-Agent string must be prepared");
-        }
+    protected static JSONObject getUrlContent(URL url) throws Exception {
+    	URLConnection connection;
+    	int responseCode;
+    	JSONObject json = null;
+    	
+    	connection = url.openConnection();
+    	HttpURLConnection httpConnection = (HttpURLConnection) connection;
+    	responseCode = httpConnection.getResponseCode();
+    	
+    	if (responseCode == HttpURLConnection.HTTP_OK) {    	    	  
+    		InputStream inputStream = httpConnection.getInputStream();	
+    		String result= convertStreamToString(inputStream);
+    		json = new JSONObject(result);
+    	}
+    	
+    	return json;
+    }
+    
+    public static String parseYQLData (JSONObject json) throws JSONException {
 
-        // Create client and set our specific user-agent string
-        HttpClient client = new DefaultHttpClient();
-        HttpGet request = new HttpGet(url);
-        request.setHeader("User-Agent", sUserAgent);
-
-        try {
-            HttpResponse response = client.execute(request);
-
-            // Check if server response is valid
-            StatusLine status = response.getStatusLine();
-            if (status.getStatusCode() != HTTP_STATUS_OK) {
-                throw new ApiException("Invalid response from server: " +
-                        status.toString());
-            }
-
-            // Pull content stream from response
-            HttpEntity entity = response.getEntity();
-            InputStream inputStream = entity.getContent();
-
-            String result= convertStreamToString(inputStream);
-            //Log.i(TAG,result);
-            
-            // A Simple JSONObject Creation
-            JSONObject json;
-			try {
-				
-				json = new JSONObject(result);
-	            Log.i(TAG,"<jsonobject>\n"+json.toString()+"\n</jsonobject>");
-
-	            
-	            JSONObject query =	 json.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
-	            String symbol = query.getString("Open");
-	            Log.i(TAG, "-------------------------------");
-	            Log.i(TAG, "-------------------------------");
-	            Log.i(TAG, "symbol = " + symbol);
-	            Log.i(TAG, "-------------------------------");
-	            Log.i(TAG, "-------------------------------");
-	            
-	            
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-
-            
-            return null;
-        } catch (IOException e) {
-            throw new ApiException("Problem communicating with API", e);
-        }
+        Log.i(TAG,json.toString());
+        JSONObject query =	 json.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
+        String symbol = query.getString("symbol");
+        Log.i(TAG, "-------------------------------");
+        Log.i(TAG, "-------------------------------");
+        Log.i(TAG, "symbol = " + symbol);
+        Log.i(TAG, "-------------------------------");
+        Log.i(TAG, "-------------------------------");
+    	
+    	return symbol;
     }
 }
