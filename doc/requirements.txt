@@ -1,0 +1,4 @@
+O que eu quero numa aplicao para mostrar a cotacao de uma acao:
+  - Codigo do papel
+  - Preco atual do papel
+  - Quantos % subiu/caiu no dia

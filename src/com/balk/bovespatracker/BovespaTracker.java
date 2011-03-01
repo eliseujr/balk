@@ -18,17 +18,17 @@ public class BovespaTracker extends Activity {
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        TextView textView = (TextView) findViewById(R.id.textView);
+        //TextView textView = (TextView) findViewById(R.id.textView);
         
         try {
-        	textView.setText("Inicio HTTP Connection");
+        	//textView.setText("Inicio HTTP Connection");
         	
         	URL url = StockDataHelper.createYQLUrl("MMI");
         	
         	if (url != null) {
         		String symbol = StockDataHelper.parseYQLData(StockDataHelper.getUrlContent(url));
         		
-                textView.setText(symbol);
+                //textView.setText(symbol);
             }
         	
         } catch (Exception e) {
