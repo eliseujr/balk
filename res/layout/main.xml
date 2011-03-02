@@ -2,9 +2,12 @@
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_height="fill_parent" 
 	android:layout_width="fill_parent" 
-	android:stretchColumns="1">
+	android:stretchColumns="1"
+	android:id="@+id/mainTableLayout">
 	
-	<TableRow>
+	<TableRow
+		android:layout_height="fill_parent" 
+		android:layout_width="fill_parent" >
 		<TextView
 			android:layout_column="1"  
 		    android:paddingTop="2dp"
@@ -22,7 +25,7 @@
 		/>			
 	</TableRow>	
 	<TableRow>
-		<TextView
+		<TextView	
 			android:layout_column="1"  
 		    android:paddingLeft="10dp" 
 		    android:textSize="13sp"
@@ -40,6 +43,7 @@
 	</TableRow>
 		  
 	<View
+		android:layout_width="fill_parent"
         android:layout_height="1dp"
         android:background="#FF909090" 
     />
@@ -61,7 +65,9 @@
 		    android:textColor="#900"
 		/>			
 	</TableRow>	
-	<TableRow>
+	<TableRow
+		android:layout_height="fill_parent" 
+		android:layout_width="fill_parent" >
 		<TextView
 			android:layout_column="1"  
 		    android:paddingLeft="10dp" 
@@ -80,6 +86,7 @@
 	</TableRow>
 		  
 	<View
+		android:layout_width="fill_parent"
         android:layout_height="1dp"
         android:background="#FF909090" 
     />
