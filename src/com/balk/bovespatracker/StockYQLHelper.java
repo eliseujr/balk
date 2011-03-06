@@ -12,7 +12,7 @@ import java.net.HttpURLConnection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class StockDataHelper {
+public class StockYQLHelper {
 	
     private static final String TAG = "StockDataHelper";
     
@@ -70,17 +70,30 @@ public class StockDataHelper {
     	return json;
     }
     
-    public static String parseYQLData (JSONObject json) throws JSONException {
-
-        Log.i(TAG,json.toString());
-        JSONObject query =	 json.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
-        String symbol = query.getString("symbol");
-        Log.i(TAG, "-------------------------------");
-        Log.i(TAG, "-------------------------------");
-        Log.i(TAG, "symbol = " + symbol);
-        Log.i(TAG, "-------------------------------");
-        Log.i(TAG, "-------------------------------");
+    public static String parseYQLData(JSONObject json) throws JSONException {
+        StockData stockData = getStockDataFromYQL(json);
+        
+        stockData.debugStockDataObj();
     	
-    	return symbol;
+    	return stockData.getStockSymbol();
+    }
+    
+    public static StockData getStockDataFromYQL(JSONObject json) throws JSONException {
+    	StockData stockData = new StockData();
+    	
+    	//debugJSONObj(json);
+    	
+    	JSONObject stockYQL = json.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
+        
+    	stockData.setStockName(stockYQL.getString("Name"));
+        stockData.setStockPrice(stockYQL.getString("LastTradePriceOnly"));
+        stockData.setStockSymbol(stockYQL.getString("Symbol"));
+    	stockData.setStockVariation(stockYQL.getString("ChangeinPercent"));
+        
+        return stockData;
+    }
+    
+    public static void debugJSONObj(JSONObject json) throws JSONException {
+    	Log.i(TAG, json.toString());
     }
 }

@@ -12,7 +12,6 @@
 	    android:paddingTop="2dp"
 	    android:paddingLeft="5dp"
 	    android:textSize="25sp"
-	    android:text="PETR4"
 	    android:textColor="#090"
 	    android:id="@+id/stockSymbol"
 	/>	
@@ -20,7 +19,6 @@
 		android:gravity="right"
 	    android:paddingRight="5dp" 
 	    android:textSize="25sp"
-	    android:text="28,00"
 	    android:textColor="#090"
 	    android:id="@+id/stockPrice"
 	/>			
@@ -32,7 +30,6 @@
 		android:layout_column="1"  
 	    android:paddingLeft="10dp" 
 	    android:textSize="13sp"
-	    android:text="( Petroleo SA )"
 	    android:textColor="#090"
 	    android:id="@+id/stockName"
 	/>	
@@ -41,7 +38,6 @@
 	    android:paddingRight="14dp"
 	    android:paddingBottom="5dp"
 	    android:textSize="13sp" 
-	    android:text="+0,50%"
 	    android:textColor="#090"
 	    android:id="@+id/stockVariation"
 	/>			

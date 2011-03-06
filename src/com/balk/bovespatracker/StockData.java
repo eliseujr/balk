@@ -1,11 +1,17 @@
 package com.balk.bovespatracker;
 
-public class StockData {
+import android.util.Log;
 
-	String mStockSymbol;
-	String mStockName;
-	String mStockPrice;
-	String mStockVariation;
+public class StockData {
+	
+	private static final String TAG = "StockData";
+
+	private String mStockSymbol;
+	private String mStockName;
+	private String mStockPrice;
+	private String mStockVariation;
+	
+	public StockData() {}
 	
 	public StockData(String stockSymbol, String stockName, String stockPrice, String stockVariation) {
 		mStockSymbol = stockSymbol;
@@ -35,15 +41,26 @@ public class StockData {
 	}
 	
 	public void setStockName(String stockName) {
-		mStockSymbol = stockName;
+		mStockName = "( " + stockName + " )";
 	}
 	
 	public void setStockPrice(String stockPrice) {
-		mStockSymbol = stockPrice;
+		mStockPrice = stockPrice;
 	}
 	
 	public void setStockVariation(String stockVariation) {
-		mStockSymbol = stockVariation;
+		mStockVariation = stockVariation;
+	}
+	
+	public void debugStockDataObj( ) {
+        Log.i(TAG, "-------------------------------");
+        Log.i(TAG, "-------------------------------");
+        Log.i(TAG, "Symbol = " + this.getStockSymbol());
+        Log.i(TAG, "Name = " + this.getStockName());
+        Log.i(TAG, "Price = " + this.getStockPrice());
+        Log.i(TAG, "variation = " + this.getStockVariation());
+        Log.i(TAG, "-------------------------------");
+        Log.i(TAG, "-------------------------------");
 	}
 	
 }
