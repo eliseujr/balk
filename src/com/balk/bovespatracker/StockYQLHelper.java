@@ -85,10 +85,10 @@ public class StockYQLHelper {
     	
     	JSONObject stockYQL = json.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
         
-    	stockData.setStockName(stockYQL.getString("Name"));
-        stockData.setStockPrice(stockYQL.getString("LastTradePriceOnly"));
-        stockData.setStockSymbol(stockYQL.getString("Symbol"));
-    	stockData.setStockVariation(stockYQL.getString("ChangeinPercent"));
+		stockData.setStockName(stockYQL.getString("Name"));
+		stockData.setStockPrice(stockYQL.getString("LastTradePriceOnly"));
+		stockData.setStockSymbol(stockYQL.getString("Symbol"));
+		stockData.setStockVariation(stockYQL.getString("ChangeinPercent"));
         
         return stockData;
     }

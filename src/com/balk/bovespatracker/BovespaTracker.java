@@ -1,10 +1,14 @@
 package com.balk.bovespatracker;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -62,13 +66,42 @@ public class BovespaTracker extends Activity {
         		
                 addStock(inflater, stock1);
                 addStock(inflater, stock2);
-                addStock(inflater, stock3);        		
+                addStock(inflater, stock3);
+                
+                DBHelper dbHelper = new DBHelper(this);
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                dbHelper.saveStockRecord(db, stock1);
+                dbHelper.saveStockRecord(db, stock2);
+                dbHelper.saveStockRecord(db, stock3);
+                db.close();
             }
         	
         } catch (Exception e) {
         	e.printStackTrace();
-        }        
+        }    
         
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+        case R.id.add_stock:
+            Log.i(TAG, "Clicked on menu Add stock");
+            return true;
+        case R.id.refresh:
+        	Log.i(TAG, "Clicked on menu Refresh");
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
     }
 }
 
