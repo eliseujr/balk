@@ -3,4 +3,7 @@
     <string name="app_name">BovespaTracker</string>
     <string name="add_stock">Add stock</string>
     <string name="refresh">Refresh</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+	<string name="enter_stock_symbol">Enter stock symbol</string>
 </resources>
