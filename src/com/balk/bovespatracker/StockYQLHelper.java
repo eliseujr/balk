@@ -66,12 +66,21 @@ public class StockYQLHelper {
     		String result= convertStreamToString(inputStream);
     		json = new JSONObject(result);
     	}
+
+    	if(json == null) {
+    		Log.e(TAG, "HttpURLConnection responseCode = " + responseCode);
+    		Log.e(TAG, "Could not get content from " + url);
+    	}
     	
     	return json;
     }
     
     public static String parseYQLData(JSONObject json) throws JSONException {
         StockData stockData = getStockDataFromYQL(json);
+        
+        if(stockData == null) {
+    		return null;
+    	}
         
         stockData.debugStockDataObj();
     	
@@ -80,6 +89,10 @@ public class StockYQLHelper {
     
     public static StockData getStockDataFromYQL(JSONObject json) throws JSONException {
     	StockData stockData = new StockData();
+    	
+    	if(json == null) {    		
+    		return null;
+    	}
     	
     	//debugJSONObj(json);
     	

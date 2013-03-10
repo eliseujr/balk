@@ -6,11 +6,11 @@ import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -34,12 +34,7 @@ public class BovespaTracker extends Activity {
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
             
-        try {
-        	addStockFromSymbol(new String[]{"VALE5.SA", "PETR4.SA", "ITUB4.SA"});
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-        
+        new addStocktoLayoutTask().execute(new String[]{"VALE5.SA", "PETR4.SA", "ITUB4.SA"});
     }
     
     @Override
@@ -85,8 +80,8 @@ public class BovespaTracker extends Activity {
     		Log.i(TAG, "onClick Save, stockSymbol = " + stockSymbol);
     		
     		try {
-				addStockFromSymbol(stockSymbol);
-		
+    			new addStocktoLayoutTask().execute(stockSymbol);
+    			
 				Toast.makeText(getApplicationContext(),
 	    				"Added stock " + stockSymbol + " to watch list",
 	    				Toast.LENGTH_LONG).show();
@@ -105,12 +100,13 @@ public class BovespaTracker extends Activity {
     	}
     };
 
-	public void addStockFromSymbol(String... stockSymbols) throws Exception {
+	public StockData[] getStockDataFromSymbols(String... stockSymbols) throws Exception {
 		// Checking if stockSymbols is empty
 		if (stockSymbols.length == 0)
-			return;
+			return null;
 		
-		LayoutInflater inflater = getLayoutInflater();
+		int i = 0;
+		StockData[] stockDataArray = new StockData[stockSymbols.length];
 	    DBHelper dbHelper = new DBHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
     
@@ -118,15 +114,43 @@ public class BovespaTracker extends Activity {
 			URL url = StockYQLHelper.createYQLUrl(stockSymbol);
 
 			if (url != null) {
-				StockData stockData = StockYQLHelper.getStockDataFromYQL(StockYQLHelper.getUrlContent(url));
-				addStockToLayout(inflater, stockData);
-	            
-	            dbHelper.saveStockRecord(db, stockData);
+				stockDataArray[i] = StockYQLHelper.getStockDataFromYQL(StockYQLHelper.getUrlContent(url));
+				if (stockDataArray[i] != null) {
+					dbHelper.saveStockRecord(db, stockDataArray[i]);
+				} else {
+					continue;
+				}
 	    	}
+			i++;
         }
         
         db.close();
+        return stockDataArray;
 	}
+	
+/*	public StockData[] getStockDataFromDB() throws Exception {
+
+		StockData[] stockDataArray = new StockData[X];
+	    DBHelper dbHelper = new DBHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+    
+        for (String stockSymbol : stockSymbols) {
+			URL url = StockYQLHelper.createYQLUrl(stockSymbol);
+
+			if (url != null) {
+				stockDataArray[i] = StockYQLHelper.getStockDataFromYQL(StockYQLHelper.getUrlContent(url));
+				if (stockDataArray[i] != null) {
+					dbHelper.saveStockRecord(db, stockDataArray[i]);
+				} else {
+					continue;
+				}
+	    	}
+			i++;
+        }
+        
+        db.close();
+        return stockDataArray;
+	}*/
 	
 	public void addStockToLayout(LayoutInflater inflater, StockData stockData) {
 		
@@ -152,5 +176,32 @@ public class BovespaTracker extends Activity {
 		mainTableLayout.addView(stockRow);
       
 	}
-    
+
+	private class addStocktoLayoutTask extends AsyncTask<String, Integer, StockData[] > {
+
+		@Override
+		protected StockData[] doInBackground(String... stockSymbols) {
+			StockData[] stockDataArray = null;
+			
+	        try {
+	        	stockDataArray = getStockDataFromSymbols(stockSymbols);
+	        } catch (Exception e) {
+	        	e.printStackTrace();
+	        }
+	        
+			return stockDataArray;
+		}		
+		
+		protected void onPostExecute(StockData[] stockDataArray) {
+			// DO stuff here ( it's UI thread )
+			for(StockData stockData : stockDataArray) {
+				if(stockData != null) {
+					stockData.debugStockDataObj();
+					addStockToLayout(getLayoutInflater(), stockData);
+				}
+			}
+		}
+		
+	}
+	
 }
