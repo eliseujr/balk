@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+	
+	<item 
+	    android:id="@+id/add_stock"
+	    android:orderInCategory="100"
+		android:title="@string/add_stock" 
+		android:showAsAction="never" />
+		    
+	<item 
+	    android:id="@+id/refresh"
+        android:orderInCategory="100"
+		android:title="@string/refresh"
+		android:showAsAction="never" />
+
+</menu>

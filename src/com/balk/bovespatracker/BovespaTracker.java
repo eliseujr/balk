@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -18,10 +17,7 @@ import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.preference.EditTextPreference;
 import java.net.URL;
-
-import org.json.JSONException;
 
 import com.balk.bovespatracker.StockYQLHelper;
 import com.balk.bovespatracker.StockData;
@@ -36,20 +32,19 @@ public class BovespaTracker extends Activity {
     	Log.i(TAG, "Inicio BovespaTracker");
     	
     	super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.activity_main);
             
         try {
-        	addStockFromSymbol(new String[]{"MMI", "VALE5.SA", "PETR4.SA", "ITUB4.SA"});
+        	addStockFromSymbol(new String[]{"VALE5.SA", "PETR4.SA", "ITUB4.SA"});
         } catch (Exception e) {
         	e.printStackTrace();
-        }    
+        }
         
     }
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
     
