@@ -2,8 +2,10 @@ package com.balk.bovespatracker;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
 public class DBHelper extends SQLiteOpenHelper {
@@ -44,6 +46,40 @@ public class DBHelper extends SQLiteOpenHelper {
 		Log.i(TAG, "query = " + query);
 		
 		db.execSQL(query);
+		
+		Log.i(TAG, "getNumberOfStocks = " + getNumberOfStocks(db));
+		
+		getAllStocks(db);
+	}
+	
+	public int getNumberOfStocks(SQLiteDatabase db) {		
+		return (int) DatabaseUtils.queryNumEntries(db, "stocks");
+	}	
+	
+	public StockData[] getAllStocks(SQLiteDatabase db) {
+		String query = "SELECT * FROM " + BOVESPA_TRACKER_TABLE_NAME + ";";
+		
+		Cursor result = db.rawQuery(query, null);
+		StockData StockDataArray[] = new StockData[result.getCount()];
+		int i = 0;
+		
+		if (result.getCount() > 0) {
+			result.moveToFirst();
+			
+		    do {
+		    	StockDataArray[i] = new StockData(
+		    		result.getString(result.getColumnIndex("symbol")),
+		    		result.getString(result.getColumnIndex("name")), 
+		    		result.getString(result.getColumnIndex("price")), 
+		    		result.getString(result.getColumnIndex("variation"))
+		    		);
+		    	i++;
+		    } while (result.moveToNext());
+		    
+		    result.close();
+		}
+		
+		return StockDataArray;
 	}
 	
 	

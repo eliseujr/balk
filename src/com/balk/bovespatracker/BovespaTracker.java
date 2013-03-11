@@ -3,6 +3,7 @@ package com.balk.bovespatracker;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -21,20 +22,24 @@ import java.net.URL;
 
 import com.balk.bovespatracker.StockYQLHelper;
 import com.balk.bovespatracker.StockData;
+import com.balk.bovespatracker.DBHelper;
 
 public class BovespaTracker extends Activity {
 
 	private static final String TAG = "BovespaTracker";
 	EditText mStockFromDialog;
+	Context mContext;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	Log.i(TAG, "Inicio BovespaTracker");
+    	mContext = this;
     	
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
             
-        new addStocktoLayoutTask().execute(new String[]{"VALE5.SA", "PETR4.SA", "ITUB4.SA"});
+        //new addStocktoLayoutTask().execute(new String[]{"VALE5.SA", "PETR4.SA", "ITUB4.SA"});
+        new addStocktoLayoutFromDBTask().execute();
     }
     
     @Override
@@ -124,33 +129,11 @@ public class BovespaTracker extends Activity {
 			i++;
         }
         
-        db.close();
-        return stockDataArray;
-	}
-	
-/*	public StockData[] getStockDataFromDB() throws Exception {
-
-		StockData[] stockDataArray = new StockData[X];
-	    DBHelper dbHelper = new DBHelper(this);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-    
-        for (String stockSymbol : stockSymbols) {
-			URL url = StockYQLHelper.createYQLUrl(stockSymbol);
-
-			if (url != null) {
-				stockDataArray[i] = StockYQLHelper.getStockDataFromYQL(StockYQLHelper.getUrlContent(url));
-				if (stockDataArray[i] != null) {
-					dbHelper.saveStockRecord(db, stockDataArray[i]);
-				} else {
-					continue;
-				}
-	    	}
-			i++;
-        }
+        
         
         db.close();
         return stockDataArray;
-	}*/
+	}
 	
 	public void addStockToLayout(LayoutInflater inflater, StockData stockData) {
 		
@@ -177,7 +160,7 @@ public class BovespaTracker extends Activity {
       
 	}
 
-	private class addStocktoLayoutTask extends AsyncTask<String, Integer, StockData[] > {
+	private class addStocktoLayoutTask extends AsyncTask<String, Integer, StockData[]> {
 
 		@Override
 		protected StockData[] doInBackground(String... stockSymbols) {
@@ -202,6 +185,36 @@ public class BovespaTracker extends Activity {
 			}
 		}
 		
+	}
+	
+	private class addStocktoLayoutFromDBTask extends AsyncTask<Void, Void, StockData[]> {
+
+		@Override
+		protected StockData[] doInBackground(Void... params) {
+			StockData[] stockDataArray = null;
+			
+		    DBHelper dbHelper = new DBHelper(mContext);
+	        SQLiteDatabase db = dbHelper.getWritableDatabase();
+	        
+	        try {
+	        	stockDataArray = dbHelper.getAllStocks(db);
+	        } catch (Exception e) {
+	        	e.printStackTrace();
+	        }
+	        
+			return stockDataArray;
+		}
+		
+		protected void onPostExecute(StockData[] stockDataArray) {
+			// DO stuff here ( it's UI thread )
+			for(StockData stockData : stockDataArray) {
+				if(stockData != null) {
+					stockData.debugStockDataObj();
+					addStockToLayout(getLayoutInflater(), stockData);
+				}
+			}
+		}
+
 	}
 	
 }
