@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
 public class DBHelper extends SQLiteOpenHelper {
@@ -36,7 +35,7 @@ public class DBHelper extends SQLiteOpenHelper {
 		
 	}
 	
-	public void saveStockRecord(SQLiteDatabase db, StockData stockData) {
+	public void addStockToDB(SQLiteDatabase db, StockData stockData) {
 		String query = "INSERT INTO " + BOVESPA_TRACKER_TABLE_NAME + " VALUES (" + 
 			"'" + stockData.getStockSymbol() + "', " + 
 			"'" + stockData.getStockName() + "', " + 
@@ -46,10 +45,6 @@ public class DBHelper extends SQLiteOpenHelper {
 		Log.i(TAG, "query = " + query);
 		
 		db.execSQL(query);
-		
-		Log.i(TAG, "getNumberOfStocks = " + getNumberOfStocks(db));
-		
-		getAllStocks(db);
 	}
 	
 	public int getNumberOfStocks(SQLiteDatabase db) {		

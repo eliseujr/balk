@@ -18,9 +18,7 @@ import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.net.URL;
 
-import com.balk.bovespatracker.StockYQLHelper;
 import com.balk.bovespatracker.StockData;
 import com.balk.bovespatracker.DBHelper;
 
@@ -105,35 +103,7 @@ public class BovespaTracker extends Activity {
     	}
     };
 
-	public StockData[] getStockDataFromSymbols(String... stockSymbols) throws Exception {
-		// Checking if stockSymbols is empty
-		if (stockSymbols.length == 0)
-			return null;
-		
-		int i = 0;
-		StockData[] stockDataArray = new StockData[stockSymbols.length];
-	    DBHelper dbHelper = new DBHelper(this);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-    
-        for (String stockSymbol : stockSymbols) {
-			URL url = StockYQLHelper.createYQLUrl(stockSymbol);
 
-			if (url != null) {
-				stockDataArray[i] = StockYQLHelper.getStockDataFromYQL(StockYQLHelper.getUrlContent(url));
-				if (stockDataArray[i] != null) {
-					dbHelper.saveStockRecord(db, stockDataArray[i]);
-				} else {
-					continue;
-				}
-	    	}
-			i++;
-        }
-        
-        
-        
-        db.close();
-        return stockDataArray;
-	}
 	
 	public void addStockToLayout(LayoutInflater inflater, StockData stockData) {
 		
@@ -165,9 +135,10 @@ public class BovespaTracker extends Activity {
 		@Override
 		protected StockData[] doInBackground(String... stockSymbols) {
 			StockData[] stockDataArray = null;
+			StockData mStockData = new StockData();
 			
 	        try {
-	        	stockDataArray = getStockDataFromSymbols(stockSymbols);
+	        	stockDataArray = mStockData.getStockDataFromSymbols(stockSymbols);
 	        } catch (Exception e) {
 	        	e.printStackTrace();
 	        }
@@ -176,11 +147,15 @@ public class BovespaTracker extends Activity {
 		}		
 		
 		protected void onPostExecute(StockData[] stockDataArray) {
+		    DBHelper dbHelper = new DBHelper(mContext);
+	        SQLiteDatabase db = dbHelper.getWritableDatabase();
+	        
 			// DO stuff here ( it's UI thread )
 			for(StockData stockData : stockDataArray) {
 				if(stockData != null) {
 					stockData.debugStockDataObj();
 					addStockToLayout(getLayoutInflater(), stockData);
+					dbHelper.addStockToDB(db, stockData);
 				}
 			}
 		}
@@ -191,8 +166,7 @@ public class BovespaTracker extends Activity {
 
 		@Override
 		protected StockData[] doInBackground(Void... params) {
-			StockData[] stockDataArray = null;
-			
+			StockData[] stockDataArray = null;			
 		    DBHelper dbHelper = new DBHelper(mContext);
 	        SQLiteDatabase db = dbHelper.getWritableDatabase();
 	        

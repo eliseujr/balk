@@ -16,14 +16,14 @@ public class StockYQLHelper {
 	
     private static final String TAG = "StockDataHelper";
     
-   	private static final String BASE_YQL_URL_BEGINING = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(";
-   	private static final String BASE_YQL_URL_END = "%22)%0A%09%09&format=json&env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback=";
+   	private static final String BASE_YQL_URL_BEGINING = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(%22";
+   	private static final String BASE_YQL_URL_END = ".SA%22)%0A%09%09&format=json&env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback=";
     
     public static URL createYQLUrl(String stockSymbol) {
     	URL yqlUrl = null;
     	
     	try {
-    		yqlUrl = new URL(BASE_YQL_URL_BEGINING + "%22" + stockSymbol + BASE_YQL_URL_END);
+    		yqlUrl = new URL(BASE_YQL_URL_BEGINING + stockSymbol + BASE_YQL_URL_END);
     	} catch (MalformedURLException e) {
     		e.printStackTrace();
     	}
@@ -100,7 +100,7 @@ public class StockYQLHelper {
         
 		stockData.setStockName(stockYQL.getString("Name"));
 		stockData.setStockPrice(stockYQL.getString("LastTradePriceOnly"));
-		stockData.setStockSymbol(stockYQL.getString("Symbol"));
+		stockData.setStockSymbol(stockYQL.getString("Symbol").substring(0, 6));
 		stockData.setStockVariation(stockYQL.getString("ChangeinPercent"));
         
         return stockData;

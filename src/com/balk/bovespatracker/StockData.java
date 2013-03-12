@@ -1,5 +1,6 @@
 package com.balk.bovespatracker;
 
+import java.net.URL;
 import android.util.Log;
 
 public class StockData {
@@ -61,6 +62,25 @@ public class StockData {
         Log.i(TAG, "variation = " + this.getStockVariation());
         Log.i(TAG, "-------------------------------");
         Log.i(TAG, "-------------------------------");
+	}
+	
+	public StockData[] getStockDataFromSymbols(String... stockSymbols) throws Exception {
+		// Checking if stockSymbols is empty
+		if (stockSymbols.length == 0)
+			return null;
+		
+		int i = 0;
+		StockData[] stockDataArray = new StockData[stockSymbols.length];
+    
+        for (String stockSymbol : stockSymbols) {
+			URL url = StockYQLHelper.createYQLUrl(stockSymbol);
+
+			if (url != null) {
+				stockDataArray[i++] = StockYQLHelper.getStockDataFromYQL(StockYQLHelper.getUrlContent(url));
+	    	}
+        }
+
+        return stockDataArray;
 	}
 	
 }
