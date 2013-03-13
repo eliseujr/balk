@@ -27,6 +27,8 @@ public class StockYQLHelper {
     	} catch (MalformedURLException e) {
     		e.printStackTrace();
     	}
+    	
+    	Log.i(TAG, "YQL URL = " + yqlUrl);
     		
     	return yqlUrl;
     }

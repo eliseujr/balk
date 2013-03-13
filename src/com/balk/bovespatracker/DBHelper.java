@@ -15,6 +15,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String BOVESPA_TRACKER_TABLE_NAME = "stocks";
     private static final String BOVESPA_TRACKER_TABLE_CREATE =
                 "CREATE TABLE " + BOVESPA_TRACKER_TABLE_NAME + " (" +
+                "_id" + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "symbol" + " TEXT, " +
                 "name" + " TEXT, " +
                 "price" + " TEXT, " +
@@ -36,7 +37,8 @@ public class DBHelper extends SQLiteOpenHelper {
 	}
 	
 	public void addStockToDB(SQLiteDatabase db, StockData stockData) {
-		String query = "INSERT INTO " + BOVESPA_TRACKER_TABLE_NAME + " VALUES (" + 
+		String query = "INSERT INTO " + BOVESPA_TRACKER_TABLE_NAME + " " +
+			" (symbol, name, price, variation) VALUES (" + 
 			"'" + stockData.getStockSymbol() + "', " + 
 			"'" + stockData.getStockName() + "', " + 
 			"'" + stockData.getStockPrice() + "', " +
@@ -53,6 +55,7 @@ public class DBHelper extends SQLiteOpenHelper {
 	
 	public StockData[] getAllStocks(SQLiteDatabase db) {
 		String query = "SELECT * FROM " + BOVESPA_TRACKER_TABLE_NAME + ";";
+		Log.i(TAG, "getAllStocks() - SELECT query = " + query);
 		
 		Cursor result = db.rawQuery(query, null);
 		StockData StockDataArray[] = new StockData[result.getCount()];
@@ -77,5 +80,31 @@ public class DBHelper extends SQLiteOpenHelper {
 		return StockDataArray;
 	}
 	
-	
+	public void updateStockData(SQLiteDatabase db, StockData stockData) {
+		String query = "SELECT * FROM " + BOVESPA_TRACKER_TABLE_NAME + " WHERE symbol='" + stockData.getStockSymbol() + "';";
+		String updateQueryPrefix = "UPDATE " + BOVESPA_TRACKER_TABLE_NAME + " SET ";
+		String updateQuerySufix = "' WHERE _id=";		
+
+		Log.i(TAG, "updateStockData() - SELECT query = " + query);
+		
+		Cursor result = db.rawQuery(query, null);
+
+		if (result.getCount() > 0) {
+			result.moveToFirst();
+			
+		    do {
+		    	String queryUpdatePrice = updateQueryPrefix + "price='" + stockData.getStockPrice() + updateQuerySufix + result.getString(result.getColumnIndex("_id"));
+		    	String queryUpdateVariation = updateQueryPrefix + "variation='" + stockData.getStockVariation() + updateQuerySufix + result.getString(result.getColumnIndex("_id"));
+
+		    	Log.i(TAG, "updateStockData() - queryUpdatePrice query = " + queryUpdatePrice);
+		    	Log.i(TAG, "updateStockData() - queryUpdateVariation query = " + queryUpdateVariation);
+		    	
+		    	db.execSQL(queryUpdatePrice);
+		    	db.execSQL(queryUpdateVariation);
+		    } while (result.moveToNext());
+		    
+		    result.close();
+		}
+	}
+
 }

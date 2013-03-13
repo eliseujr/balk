@@ -12,14 +12,12 @@
 	    android:paddingTop="2dp"
 	    android:paddingLeft="5dp"
 	    android:textSize="25sp"
-	    android:textColor="#090"
 	    android:id="@+id/stockSymbol"
 	/>	
 	<TextView  
 		android:gravity="right"
 	    android:paddingRight="5dp" 
 	    android:textSize="25sp"
-	    android:textColor="#090"
 	    android:id="@+id/stockPrice"
 	/>			
 </TableRow>	
@@ -30,7 +28,6 @@
 		android:layout_column="1"  
 	    android:paddingLeft="10dp" 
 	    android:textSize="13sp"
-	    android:textColor="#090"
 	    android:id="@+id/stockName"
 	/>	
 	<TextView
@@ -38,7 +35,6 @@
 	    android:paddingRight="14dp"
 	    android:paddingBottom="5dp"
 	    android:textSize="13sp" 
-	    android:textColor="#090"
 	    android:id="@+id/stockVariation"
 	/>			
 </TableRow>

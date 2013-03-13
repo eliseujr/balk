@@ -56,12 +56,13 @@ public class BovespaTracker extends Activity {
             return true;
         case R.id.refresh:
         	Log.i(TAG, "Clicked on menu Refresh");
+        	new refreshStockDataTask().execute();
             return true;
         default:
             return super.onOptionsItemSelected(item);
         }
     }
-    
+
     private void getStockNameDialog() {
         //Mapping UI
         View stockDialog = LayoutInflater.from(this).inflate(R.layout.stock_name_dialog, null);
@@ -120,9 +121,6 @@ public class BovespaTracker extends Activity {
 		stockVariationView.setText(stockData.getStockVariation());
 		
 		if(stockData.getStockVariation().startsWith("-")) {
-			stockNameView.setTextColor(Color.RED);
-			stockSymbolView.setTextColor(Color.RED);
-			stockPriceView.setTextColor(Color.RED);
 			stockVariationView.setTextColor(Color.RED);
 		}
 		
@@ -153,11 +151,12 @@ public class BovespaTracker extends Activity {
 			// DO stuff here ( it's UI thread )
 			for(StockData stockData : stockDataArray) {
 				if(stockData != null) {
-					stockData.debugStockDataObj();
+					//stockData.debugStockDataObj();
 					addStockToLayout(getLayoutInflater(), stockData);
 					dbHelper.addStockToDB(db, stockData);
 				}
 			}
+			db.close();
 		}
 		
 	}
@@ -176,17 +175,60 @@ public class BovespaTracker extends Activity {
 	        	e.printStackTrace();
 	        }
 	        
+	        db.close();
 			return stockDataArray;
 		}
 		
 		protected void onPostExecute(StockData[] stockDataArray) {
+			TableLayout mainTableLayout = (TableLayout) findViewById(R.id.mainTableLayout);
+			mainTableLayout.removeAllViewsInLayout();
+			
 			// DO stuff here ( it's UI thread )
 			for(StockData stockData : stockDataArray) {
 				if(stockData != null) {
-					stockData.debugStockDataObj();
+					//stockData.debugStockDataObj();
 					addStockToLayout(getLayoutInflater(), stockData);
 				}
 			}
+		}
+
+	}
+
+	private class refreshStockDataTask extends AsyncTask<Void, Void, Integer> {
+
+		@Override
+		protected Integer doInBackground(Void... params) {
+		    DBHelper dbHelper = new DBHelper(mContext);
+	        SQLiteDatabase db = dbHelper.getWritableDatabase();
+	    	StockData[] allStocks = dbHelper.getAllStocks(db);
+	    	StockData stockUpdated = new StockData();
+	    	
+	    	for(StockData stock : allStocks) {
+	    		try {
+					stockUpdated = stockUpdated.getStockDataFromSymbol(stock.getStockSymbol());
+					// If stock price or variation have changed, update stock data
+					if (!(stock.getStockPrice().equals(stockUpdated.getStockPrice())) || 
+						!(stock.getStockVariation().equals(stockUpdated.getStockVariation()))) {
+						dbHelper.updateStockData(db, stockUpdated);
+						Log.i(TAG, "Updated price data for stock " + stockUpdated.getStockSymbol());
+					} else {
+						Log.i(TAG, "Price data for stock " + stockUpdated.getStockSymbol() + " didn't change");
+					}
+				} catch (Exception e) {
+					Log.e(TAG, "Could not adquire StockData from YQL for stock " + stock.getStockSymbol());
+					e.printStackTrace();
+				}
+	    	}
+	        
+	    	db.close();
+			return 0;
+		}
+		
+		@Override
+		protected void onPostExecute(Integer param) {
+			// DO stuff here ( it's UI thread )
+			Log.i(TAG, "Calling addStocktoLayoutFromDBTask() from refreshStockDataTask()");
+			new addStocktoLayoutFromDBTask().execute();
 		}
 
 	}

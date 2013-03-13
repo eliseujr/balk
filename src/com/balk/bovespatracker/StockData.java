@@ -63,6 +63,14 @@ public class StockData {
         Log.i(TAG, "-------------------------------");
         Log.i(TAG, "-------------------------------");
 	}
+
+	public StockData getStockDataFromSymbol(String stockSymbol) throws Exception {
+
+		URL url = StockYQLHelper.createYQLUrl(stockSymbol);
+		StockData stockData = StockYQLHelper.getStockDataFromYQL(StockYQLHelper.getUrlContent(url));
+
+		return stockData;
+	}
 	
 	public StockData[] getStockDataFromSymbols(String... stockSymbols) throws Exception {
 		// Checking if stockSymbols is empty

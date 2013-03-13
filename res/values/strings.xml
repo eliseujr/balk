@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">BovespaTracker</string>
+    <string name="app_name">Bovespa Tracker</string>
     <string name="add_stock">Add stock</string>
     <string name="refresh">Refresh</string>
     <string name="ok">OK</string>
