@@ -3,6 +3,7 @@ package com.balk.bovespatracker;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
@@ -14,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -34,9 +36,11 @@ public class BovespaTracker extends Activity {
     	mContext = this;
     	
     	super.onCreate(savedInstanceState);
+    	
+    	requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+    	
         setContentView(R.layout.activity_main);
-            
-        //new addStocktoLayoutTask().execute(new String[]{"VALE5.SA", "PETR4.SA", "ITUB4.SA"});
+
         new addStocktoLayoutFromDBTask().execute();
     }
     
@@ -64,7 +68,7 @@ public class BovespaTracker extends Activity {
     }
 
     private void getStockNameDialog() {
-        //Mapping UI
+    	//Mapping UI
         View stockDialog = LayoutInflater.from(this).inflate(R.layout.stock_name_dialog, null);
         mStockFromDialog = (EditText) stockDialog.findViewById(R.id.stockEditText);
 
@@ -81,15 +85,24 @@ public class BovespaTracker extends Activity {
     DialogInterface.OnClickListener saveNewStockListener = new DialogInterface.OnClickListener() {
     	public void onClick(DialogInterface dialog, int whichButton) {
     		String stockSymbol = mStockFromDialog.getText().toString();
+    		
+    		// Removing new line that might be entered by user
+    		stockSymbol = stockSymbol.replaceAll("\\\\n", ""); 
+
+    		// Check if stock symbol seems valid
+    		Log.i(TAG, "stockSymbol length = " + stockSymbol.length());
+    		if(4 > stockSymbol.length() || stockSymbol.length() > 8) {
+				Toast.makeText(getApplicationContext(),
+	    				"Stock " + stockSymbol + " seems invalid",
+	    				Toast.LENGTH_LONG).show();   			
+    			return;
+    		}
+    		
     		Log.i(TAG, "onClick Save, stockSymbol = " + stockSymbol);
     		
     		try {
     			new addStocktoLayoutTask().execute(stockSymbol);
-    			
-				Toast.makeText(getApplicationContext(),
-	    				"Added stock " + stockSymbol + " to watch list",
-	    				Toast.LENGTH_LONG).show();
-			
+
     		} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -128,34 +141,40 @@ public class BovespaTracker extends Activity {
       
 	}
 
-	private class addStocktoLayoutTask extends AsyncTask<String, Integer, StockData[]> {
+	private class addStocktoLayoutTask extends AsyncTask<String, Integer, StockData> {
 
 		@Override
-		protected StockData[] doInBackground(String... stockSymbols) {
-			StockData[] stockDataArray = null;
-			StockData mStockData = new StockData();
+		protected StockData doInBackground(String... stockSymbols) {
+			StockData stockData = new StockData();
 			
 	        try {
-	        	stockDataArray = mStockData.getStockDataFromSymbols(stockSymbols);
+	        	stockData = stockData.getStockDataFromSymbol(stockSymbols[0]);
 	        } catch (Exception e) {
 	        	e.printStackTrace();
 	        }
 	        
-			return stockDataArray;
+			return stockData;
 		}		
 		
-		protected void onPostExecute(StockData[] stockDataArray) {
+		protected void onPostExecute(StockData stockData) {
 		    DBHelper dbHelper = new DBHelper(mContext);
 	        SQLiteDatabase db = dbHelper.getWritableDatabase();
 	        
 			// DO stuff here ( it's UI thread )
-			for(StockData stockData : stockDataArray) {
-				if(stockData != null) {
-					//stockData.debugStockDataObj();
-					addStockToLayout(getLayoutInflater(), stockData);
-					dbHelper.addStockToDB(db, stockData);
-				}
+			if(stockData != null) {
+				//stockData.debugStockDataObj();
+				addStockToLayout(getLayoutInflater(), stockData);
+				dbHelper.addStockToDB(db, stockData);
+
+				Toast.makeText(getApplicationContext(),
+	    				"Added stock " + stockData.getStockSymbol() + " to watch list",
+	    				Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(getApplicationContext(),
+	    				"Couldn't add stock to watch list",
+	    				Toast.LENGTH_LONG).show();
 			}
+			
 			db.close();
 		}
 		
@@ -195,14 +214,13 @@ public class BovespaTracker extends Activity {
 	}
 
 	private class refreshStockDataTask extends AsyncTask<Void, Void, Integer> {
-
 		@Override
 		protected Integer doInBackground(Void... params) {
 		    DBHelper dbHelper = new DBHelper(mContext);
 	        SQLiteDatabase db = dbHelper.getWritableDatabase();
 	    	StockData[] allStocks = dbHelper.getAllStocks(db);
 	    	StockData stockUpdated = new StockData();
-	    	
+
 	    	for(StockData stock : allStocks) {
 	    		try {
 					stockUpdated = stockUpdated.getStockDataFromSymbol(stock.getStockSymbol());
@@ -229,6 +247,7 @@ public class BovespaTracker extends Activity {
 			// DO stuff here ( it's UI thread )
 			Log.i(TAG, "Calling addStocktoLayoutFromDBTask() from refreshStockDataTask()");
 			new addStocktoLayoutFromDBTask().execute();
+			Toast.makeText(getApplicationContext(), "Stock prices updated", Toast.LENGTH_LONG).show();
 		}
 
 	}

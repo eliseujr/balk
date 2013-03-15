@@ -6,4 +6,9 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
 	<string name="enter_stock_symbol">Enter stock symbol</string>
+	
+	<string-array name="stocks_array">
+        <item>BOVA11</item>
+        <item>PETR4</item>
+    </string-array>
 </resources>

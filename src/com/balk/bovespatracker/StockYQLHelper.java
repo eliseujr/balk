@@ -100,9 +100,16 @@ public class StockYQLHelper {
     	
     	JSONObject stockYQL = json.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
         
+    	// Check if stock info is valid
+    	Log.i(TAG, "ErrorIndicationreturnedforsymbolchangedinvalid = " + stockYQL.getString("ErrorIndicationreturnedforsymbolchangedinvalid"));
+    	if(stockYQL.getString("ErrorIndicationreturnedforsymbolchangedinvalid").contains("No such ticker symbol")) {
+    		Log.e(TAG, "Stock data from YQL is invalid.");
+    		return null;
+    	} 
+    	
 		stockData.setStockName(stockYQL.getString("Name"));
-		stockData.setStockPrice(stockYQL.getString("LastTradePriceOnly"));
-		stockData.setStockSymbol(stockYQL.getString("Symbol").substring(0, 6));
+		stockData.setStockPrice(stockYQL.getString("LastTradePriceOnly"));		
+		stockData.setStockSymbol(stockYQL.getString("Symbol").substring(0, stockYQL.getString("Symbol").indexOf('.')));
 		stockData.setStockVariation(stockYQL.getString("ChangeinPercent"));
         
         return stockData;
