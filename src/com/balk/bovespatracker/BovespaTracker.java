@@ -3,7 +3,6 @@ package com.balk.bovespatracker;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
@@ -220,7 +219,13 @@ public class BovespaTracker extends Activity {
 	        SQLiteDatabase db = dbHelper.getWritableDatabase();
 	    	StockData[] allStocks = dbHelper.getAllStocks(db);
 	    	StockData stockUpdated = new StockData();
-
+	    	
+	    	// Check if we have at least one stock on allStocks[]
+	    	if(allStocks.length == 0) { 
+	    		db.close();
+				return -1;
+	    	}
+	    	
 	    	for(StockData stock : allStocks) {
 	    		try {
 					stockUpdated = stockUpdated.getStockDataFromSymbol(stock.getStockSymbol());
@@ -235,9 +240,11 @@ public class BovespaTracker extends Activity {
 				} catch (Exception e) {
 					Log.e(TAG, "Could not adquire StockData from YQL for stock " + stock.getStockSymbol());
 					e.printStackTrace();
+					db.close();
+					return -2;					
 				}
 	    	}
-	        
+	    	
 	    	db.close();
 			return 0;
 		}
@@ -245,9 +252,22 @@ public class BovespaTracker extends Activity {
 		@Override
 		protected void onPostExecute(Integer param) {
 			// DO stuff here ( it's UI thread )
+			
+			// Check for errors
+			switch(param) {
+			// No stock to update
+			case -1:
+				Toast.makeText(getApplicationContext(), "No stock to update. Please add at least one", Toast.LENGTH_LONG).show();
+				return;
+			case -2:
+				Toast.makeText(getApplicationContext(), "Could not refresh stock data for all stocks. Please try again", Toast.LENGTH_LONG).show();
+				return;
+			default:
+				Toast.makeText(getApplicationContext(), "Stock prices updated", Toast.LENGTH_LONG).show();
+			}
+			
 			Log.i(TAG, "Calling addStocktoLayoutFromDBTask() from refreshStockDataTask()");
 			new addStocktoLayoutFromDBTask().execute();
-			Toast.makeText(getApplicationContext(), "Stock prices updated", Toast.LENGTH_LONG).show();
 		}
 
 	}
