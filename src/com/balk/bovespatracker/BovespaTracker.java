@@ -1,12 +1,14 @@
 package com.balk.bovespatracker;
 
-import android.app.Activity;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,33 +16,40 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.EditText;
-import android.widget.TableLayout;
-import android.widget.TextView;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.balk.bovespatracker.StockData;
 import com.balk.bovespatracker.DBHelper;
 
-public class BovespaTracker extends Activity {
+public class BovespaTracker extends ListActivity {
 
 	private static final String TAG = "BovespaTracker";
 	EditText mStockFromDialog;
 	Context mContext;
+	SimpleAdapter mAdapter;
+    static final ArrayList<HashMap<String,String>> stockList = new ArrayList<HashMap<String,String>>(); 
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	Log.i(TAG, "Inicio BovespaTracker");
     	mContext = this;
     	
-    	super.onCreate(savedInstanceState);
-    	
-    	requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-    	
+    	super.onCreate(savedInstanceState);    	
         setContentView(R.layout.activity_main);
+        
+        mAdapter = new SimpleAdapter(
+        		this,
+        		stockList,
+        		R.layout.stockrow,
+        		new String[] {"stockSymbol","stockPrice","stockName", "stockVariation"},
+        		new int[] {R.id.stockSymbol,R.id.stockPrice, R.id.stockName, R.id.stockVariation}
+        		);
 
         new addStocktoLayoutFromDBTask().execute();
+
+        setListAdapter(mAdapter);
     }
     
     @Override
@@ -118,32 +127,21 @@ public class BovespaTracker extends Activity {
 
 
 	
-	public void addStockToLayout(LayoutInflater inflater, StockData stockData) {
-		
-		TableLayout mainTableLayout = (TableLayout) findViewById(R.id.mainTableLayout);
-		View stockRow = inflater.inflate(R.layout.stockrow, null);
-		
-		TextView stockNameView = (TextView) stockRow.findViewById(R.id.stockName);
-		stockNameView.setText(stockData.getStockName());
-		TextView stockSymbolView = (TextView) stockRow.findViewById(R.id.stockSymbol);
-		stockSymbolView.setText(stockData.getStockSymbol());
-		TextView stockPriceView = (TextView) stockRow.findViewById(R.id.stockPrice);
-		stockPriceView.setText(stockData.getStockPrice());
-		TextView stockVariationView = (TextView) stockRow.findViewById(R.id.stockVariation);
-		stockVariationView.setText(stockData.getStockVariation());
-		
-		if(stockData.getStockVariation().startsWith("-")) {
-			stockVariationView.setTextColor(Color.RED);
-		}
-		
-		mainTableLayout.addView(stockRow);
-      
+	public void addStockToLayout(StockData stockData) {
+		Log.i(TAG, "addStockToLayout(" + stockData.getStockSymbol() + ")");
+    	HashMap<String,String> stockRow = new HashMap<String,String>();
+    	stockRow.put("stockSymbol",stockData.getStockSymbol());
+    	stockRow.put("stockPrice", stockData.getStockPrice());
+    	stockRow.put("stockName", stockData.getStockName());
+    	stockRow.put("stockVariation", stockData.getStockVariation());
+    	stockList.add(stockRow);
 	}
 
 	private class addStocktoLayoutTask extends AsyncTask<String, Integer, StockData> {
 
 		@Override
 		protected StockData doInBackground(String... stockSymbols) {
+			Log.i(TAG, "addStocktoLayoutTask() - doInBackground()");
 			StockData stockData = new StockData();
 			
 	        try {
@@ -156,13 +154,15 @@ public class BovespaTracker extends Activity {
 		}		
 		
 		protected void onPostExecute(StockData stockData) {
+			Log.i(TAG, "addStocktoLayoutTask() - onPostExecute()");
 		    DBHelper dbHelper = new DBHelper(mContext);
 	        SQLiteDatabase db = dbHelper.getWritableDatabase();
 	        
 			// DO stuff here ( it's UI thread )
 			if(stockData != null) {
 				//stockData.debugStockDataObj();
-				addStockToLayout(getLayoutInflater(), stockData);
+				addStockToLayout(stockData);
+				mAdapter.notifyDataSetChanged();
 				dbHelper.addStockToDB(db, stockData);
 
 				Toast.makeText(getApplicationContext(),
@@ -183,6 +183,7 @@ public class BovespaTracker extends Activity {
 
 		@Override
 		protected StockData[] doInBackground(Void... params) {
+			Log.i(TAG, "addStocktoLayoutFromDBTask() - doInBackground()");
 			StockData[] stockDataArray = null;			
 		    DBHelper dbHelper = new DBHelper(mContext);
 	        SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -198,16 +199,16 @@ public class BovespaTracker extends Activity {
 		}
 		
 		protected void onPostExecute(StockData[] stockDataArray) {
-			TableLayout mainTableLayout = (TableLayout) findViewById(R.id.mainTableLayout);
-			mainTableLayout.removeAllViewsInLayout();
-			
+			Log.i(TAG, "addStocktoLayoutFromDBTask() - onPostExecute()");
+			stockList.clear();
 			// DO stuff here ( it's UI thread )
 			for(StockData stockData : stockDataArray) {
 				if(stockData != null) {
 					//stockData.debugStockDataObj();
-					addStockToLayout(getLayoutInflater(), stockData);
+					addStockToLayout(stockData);
 				}
 			}
+			mAdapter.notifyDataSetChanged();
 		}
 
 	}
@@ -215,6 +216,7 @@ public class BovespaTracker extends Activity {
 	private class refreshStockDataTask extends AsyncTask<Void, Void, Integer> {
 		@Override
 		protected Integer doInBackground(Void... params) {
+			Log.i(TAG, "refreshStockDataTask() - doInBackground()");
 		    DBHelper dbHelper = new DBHelper(mContext);
 	        SQLiteDatabase db = dbHelper.getWritableDatabase();
 	    	StockData[] allStocks = dbHelper.getAllStocks(db);
@@ -251,6 +253,7 @@ public class BovespaTracker extends Activity {
 		
 		@Override
 		protected void onPostExecute(Integer param) {
+			Log.i(TAG, "refreshStockDataTask() - onPostExecute()");
 			// DO stuff here ( it's UI thread )
 			
 			// Check for errors
@@ -261,7 +264,6 @@ public class BovespaTracker extends Activity {
 				return;
 			case -2:
 				Toast.makeText(getApplicationContext(), "Could not refresh stock data for all stocks. Please try again", Toast.LENGTH_LONG).show();
-				return;
 			default:
 				Toast.makeText(getApplicationContext(), "Stock prices updated", Toast.LENGTH_LONG).show();
 			}

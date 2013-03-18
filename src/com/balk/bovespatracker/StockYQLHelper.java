@@ -22,6 +22,8 @@ public class StockYQLHelper {
     public static URL createYQLUrl(String stockSymbol) {
     	URL yqlUrl = null;
     	
+    	Log.i(TAG, "Symbol = " + stockSymbol);
+    	
     	try {
     		yqlUrl = new URL(BASE_YQL_URL_BEGINING + stockSymbol + BASE_YQL_URL_END);
     	} catch (MalformedURLException e) {
