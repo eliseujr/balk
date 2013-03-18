@@ -257,7 +257,7 @@ public class BovespaTracker extends Activity {
 			switch(param) {
 			// No stock to update
 			case -1:
-				Toast.makeText(getApplicationContext(), "No stock to update. Please add at least one", Toast.LENGTH_LONG).show();
+				Toast.makeText(getApplicationContext(), "No stock to update", Toast.LENGTH_LONG).show();
 				return;
 			case -2:
 				Toast.makeText(getApplicationContext(), "Could not refresh stock data for all stocks. Please try again", Toast.LENGTH_LONG).show();

@@ -14,7 +14,7 @@ import org.json.JSONObject;
 
 public class StockYQLHelper {
 	
-    private static final String TAG = "StockDataHelper";
+    private static final String TAG = "StockYQLHelper";
     
    	private static final String BASE_YQL_URL_BEGINING = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(%22";
    	private static final String BASE_YQL_URL_END = ".SA%22)%0A%09%09&format=json&env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback=";
@@ -58,6 +58,33 @@ public class StockYQLHelper {
     	URLConnection connection;
     	int responseCode;
     	JSONObject json = null;
+    	int retry = 0;
+    	
+    	// Try at least 3 times to get stock data from Yahoo before failing
+    	while(retry++ < 3) {
+    		Log.i(TAG, "retry = " + retry);
+
+        	connection = url.openConnection();
+        	HttpURLConnection httpConnection = (HttpURLConnection) connection;
+        	responseCode = httpConnection.getResponseCode();
+        	
+        	if (responseCode == HttpURLConnection.HTTP_OK) {    	    	  
+        		InputStream inputStream = httpConnection.getInputStream();	
+        		String result= convertStreamToString(inputStream);
+        		json = new JSONObject(result);
+        	}
+
+        	// Could not get stock data from Yahoo
+        	if(json == null) {
+        		Log.e(TAG, "HttpURLConnection responseCode = " + responseCode);
+        		Log.e(TAG, "Could not get content from " + url);
+        	} 
+        	// Data was successfully adquired from Yahoo, exiting retry loop
+        	else {
+        		break;
+        	}
+    		
+    	}
     	
     	connection = url.openConnection();
     	HttpURLConnection httpConnection = (HttpURLConnection) connection;
