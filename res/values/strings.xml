@@ -2,13 +2,11 @@
 <resources>
     <string name="app_name">Bovespa Tracker</string>
     <string name="add_stock">Add stock</string>
+    <string name="remove_stock">Remove stock</string>
     <string name="refresh">Refresh</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
 	<string name="enter_stock_symbol">Enter stock symbol</string>
-	
-	<string-array name="stocks_array">
-        <item>BOVA11</item>
-        <item>PETR4</item>
-    </string-array>
+	<string name="remove_stocks_cab_title">Select stocks to remove</string>
+	<string name="selected"> selected</string>
 </resources>

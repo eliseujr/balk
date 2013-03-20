@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+    <item 
+	    android:id="@+id/remove_stock"
+		android:title="@string/remove_stock" 
+		android:icon="@drawable/ic_remove"
+	    android:orderInCategory="100"
+		android:showAsAction="ifRoom|withText"/>
+
+</menu>

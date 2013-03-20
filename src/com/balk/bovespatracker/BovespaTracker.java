@@ -12,11 +12,18 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView.MultiChoiceModeListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
@@ -28,30 +35,97 @@ public class BovespaTracker extends ListActivity {
 	private static final String TAG = "BovespaTracker";
 	EditText mStockFromDialog;
 	Context mContext;
+	ActionMode mActionMode;
 	SimpleAdapter mAdapter;
-    static final ArrayList<HashMap<String,String>> stockList = new ArrayList<HashMap<String,String>>(); 
+    static final ArrayList<HashMap<String,String>> stockList = new ArrayList<HashMap<String,String>>();
+    private ListView listView = null;
+    ActionMode.Callback mCallback;
+    ActionMode mMode;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	Log.i(TAG, "Inicio BovespaTracker");
+    	super.onCreate(savedInstanceState);
     	mContext = this;
     	
-    	super.onCreate(savedInstanceState);    	
+    	
+        mAdapter = new SimpleAdapter(
+        	this,
+        	stockList,
+        	R.layout.stockrow,
+        	new String[] {"stockSymbol","stockPrice","stockName", "stockVariation"},
+        	new int[] {R.id.stockSymbol,R.id.stockPrice, R.id.stockName, R.id.stockVariation}
+       	);
+    	
         setContentView(R.layout.activity_main);
         
-        mAdapter = new SimpleAdapter(
-        		this,
-        		stockList,
-        		R.layout.stockrow,
-        		new String[] {"stockSymbol","stockPrice","stockName", "stockVariation"},
-        		new int[] {R.id.stockSymbol,R.id.stockPrice, R.id.stockName, R.id.stockVariation}
-        		);
-
         new addStocktoLayoutFromDBTask().execute();
 
         setListAdapter(mAdapter);
+
+        listView = getListView();
+        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        
+        listView.setMultiChoiceModeListener(new MultiChoiceModeListener() {
+            
+            public void onItemCheckedStateChanged(ActionMode mode, int position,
+                                                  long id, boolean checked) {
+                // Here you can do something when items are selected/de-selected,
+                // such as update the title in the CAB
+            	mode.setTitle(listView.getCheckedItemCount() + " selected");
+            }
+
+            
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                // Respond to clicks on the actions in the CAB
+                switch (item.getItemId()) {
+                case R.id.remove_stock:                	
+                    SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
+                    int numberOfRemovedStocks = 0;
+                    for (int i = 0; i < checkedItems.size(); i++) {
+                        if (checkedItems.valueAt(i)) {
+                        	removeStock(checkedItems.keyAt(i-numberOfRemovedStocks));
+                        	numberOfRemovedStocks++;
+                        }
+                    }
+                	mode.finish();
+                	return true;
+                default:
+                    return false;
+                }
+            }
+
+            
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                // Inflate the menu for the CAB
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.context_menu, menu);
+                return true;
+            }
+
+            
+            public void onDestroyActionMode(ActionMode mode) {
+                // Here you can make any necessary updates to the activity when
+                // the CAB is removed. By default, selected items are deselected/unchecked.
+            }
+
+            
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                // Here you can perform updates to the CAB due to
+                // an invalidate() request
+                return false;
+            }
+        });
+
+        
+        // This will be used to call Activity StockDetails
+        listView.setOnItemClickListener(new OnItemClickListener(){    
+        	public void onItemClick(AdapterView<?> arg0, View v, int pos, long id) {
+				Toast.makeText(getApplicationContext(),	"OnClickListener(), pos = " + pos + ", id = " + id, Toast.LENGTH_SHORT).show();
+			}
+        });
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
@@ -125,8 +199,6 @@ public class BovespaTracker extends ListActivity {
     	}
     };
 
-
-	
 	public void addStockToLayout(StockData stockData) {
 		Log.i(TAG, "addStockToLayout(" + stockData.getStockSymbol() + ")");
     	HashMap<String,String> stockRow = new HashMap<String,String>();
@@ -135,6 +207,26 @@ public class BovespaTracker extends ListActivity {
     	stockRow.put("stockName", stockData.getStockName());
     	stockRow.put("stockVariation", stockData.getStockVariation());
     	stockList.add(stockRow);
+	}
+	
+	public void removeStock(int pos) {
+	    DBHelper dbHelper = new DBHelper(mContext);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        
+		Log.i(TAG, "stockList DBG");
+		for(int i=0; i<stockList.size(); i++) {
+			Log.i(TAG, "stockList[" + i + "] = " + stockList.get(i).get("stockSymbol"));
+		}
+		
+		Log.i(TAG, "removeStock(" + pos + ")");
+		Log.i(TAG, "Removing stock " + stockList.get(pos).get("stockSymbol"));
+		try {
+			Toast.makeText(getApplicationContext(),	"Removed stock " + stockList.get(pos).get("stockSymbol"), Toast.LENGTH_SHORT).show();
+			dbHelper.removeStock(db, stockList.get(pos).get("stockSymbol"));
+			stockList.remove(pos);
+		} catch (Exception e) {
+			e.printStackTrace();			
+		}
 	}
 
 	private class addStocktoLayoutTask extends AsyncTask<String, Integer, StockData> {

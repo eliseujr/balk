@@ -80,6 +80,14 @@ public class DBHelper extends SQLiteOpenHelper {
 		return StockDataArray;
 	}
 	
+	public void removeStock(SQLiteDatabase db, String stockSymbol) {
+		String query = "DELETE FROM " + BOVESPA_TRACKER_TABLE_NAME + " WHERE symbol='" + stockSymbol + "'";
+		
+		Log.i(TAG, "removeStock( " + stockSymbol + " ) - DELETE query = " + query);
+		
+		db.execSQL(query);
+	}
+	
 	public void updateStockData(SQLiteDatabase db, StockData stockData) {
 		String query = "SELECT * FROM " + BOVESPA_TRACKER_TABLE_NAME + " WHERE symbol='" + stockData.getStockSymbol() + "';";
 		String updateQueryPrefix = "UPDATE " + BOVESPA_TRACKER_TABLE_NAME + " SET ";
