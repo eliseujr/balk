@@ -25,6 +25,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.balk.bovespatracker.StockData;
@@ -41,6 +42,7 @@ public class BovespaTracker extends ListActivity {
     private ListView listView = null;
     ActionMode.Callback mCallback;
     ActionMode mMode;
+    String mLastUpdatedDate;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -296,10 +298,15 @@ public class BovespaTracker extends ListActivity {
 			// DO stuff here ( it's UI thread )
 			for(StockData stockData : stockDataArray) {
 				if(stockData != null) {
-					//stockData.debugStockDataObj();
 					addStockToLayout(stockData);
+					// Update mLastUpdatedDate	
+		    		mLastUpdatedDate = stockData.getStockLastUpdated();
 				}
 			}
+
+			TextView textViewLastUpdated = (TextView) findViewById(R.id.lastUpdated);
+    		textViewLastUpdated.setText(mLastUpdatedDate);
+	
 			mAdapter.notifyDataSetChanged();
 		}
 
@@ -323,20 +330,15 @@ public class BovespaTracker extends ListActivity {
 	    	for(StockData stock : allStocks) {
 	    		try {
 					stockUpdated = stockUpdated.getStockDataFromSymbolFromBovespa(stock.getStockSymbol());
-					// If stock price or variation have changed, update stock data
-					if (!(stock.getStockPrice().equals(stockUpdated.getStockPrice())) || 
-						!(stock.getStockVariation().equals(stockUpdated.getStockVariation()))) {
-						dbHelper.updateStockData(db, stockUpdated);
-						Log.i(TAG, "Updated price data for stock " + stockUpdated.getStockSymbol());
-					} else {
-						Log.i(TAG, "Price data for stock " + stockUpdated.getStockSymbol() + " didn't change");
-					}
+					dbHelper.updateStockData(db, stockUpdated);
 				} catch (Exception e) {
 					Log.e(TAG, "Could not adquire StockData from YQL for stock " + stock.getStockSymbol());
 					e.printStackTrace();
 					db.close();
 					return -2;					
 				}
+	    		// Update mLastUpdatedDate	
+	    		mLastUpdatedDate = stockUpdated.getStockLastUpdated();
 	    	}
 	    	
 	    	db.close();
@@ -357,6 +359,8 @@ public class BovespaTracker extends ListActivity {
 			case -2:
 				Toast.makeText(getApplicationContext(), "Could not refresh stock data for all stocks. Please try again", Toast.LENGTH_LONG).show();
 			default:
+	    		TextView textViewLastUpdated = (TextView) findViewById(R.id.lastUpdated);
+	    		textViewLastUpdated.setText(mLastUpdatedDate);
 				Toast.makeText(getApplicationContext(), "Stock prices updated", Toast.LENGTH_LONG).show();
 			}
 			

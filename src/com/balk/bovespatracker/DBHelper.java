@@ -19,7 +19,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 "symbol" + " TEXT, " +
                 "name" + " TEXT, " +
                 "price" + " TEXT, " +
-                "variation" + " TEXT);";
+                "variation" + " TEXT, " +
+                "last_updated" + " TEXT);";
 
     DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -38,11 +39,12 @@ public class DBHelper extends SQLiteOpenHelper {
 	
 	public void addStockToDB(SQLiteDatabase db, StockData stockData) {
 		String query = "INSERT INTO " + BOVESPA_TRACKER_TABLE_NAME + " " +
-			" (symbol, name, price, variation) VALUES (" + 
+			" (symbol, name, price, variation, last_updated) VALUES (" + 
 			"'" + stockData.getStockSymbol() + "', " + 
 			"'" + stockData.getStockName() + "', " + 
 			"'" + stockData.getStockPrice() + "', " +
-			"'" + stockData.getStockVariation() + "' );";
+			"'" + stockData.getStockVariation() + "', " +
+			"'" + stockData.getStockLastUpdated() + "' );";
 		
 		Log.i(TAG, "query = " + query);
 		
@@ -69,7 +71,8 @@ public class DBHelper extends SQLiteOpenHelper {
 		    		result.getString(result.getColumnIndex("symbol")),
 		    		result.getString(result.getColumnIndex("name")), 
 		    		result.getString(result.getColumnIndex("price")), 
-		    		result.getString(result.getColumnIndex("variation"))
+		    		result.getString(result.getColumnIndex("variation")),
+		    		result.getString(result.getColumnIndex("last_updated"))
 		    		);
 		    	i++;
 		    } while (result.moveToNext());
@@ -103,12 +106,15 @@ public class DBHelper extends SQLiteOpenHelper {
 		    do {
 		    	String queryUpdatePrice = updateQueryPrefix + "price='" + stockData.getStockPrice() + updateQuerySufix + result.getString(result.getColumnIndex("_id"));
 		    	String queryUpdateVariation = updateQueryPrefix + "variation='" + stockData.getStockVariation() + updateQuerySufix + result.getString(result.getColumnIndex("_id"));
+		    	String queryUpdateLastUpdated = updateQueryPrefix + "last_updated='" + stockData.getStockLastUpdated() + updateQuerySufix + result.getString(result.getColumnIndex("_id"));
 
 		    	Log.i(TAG, "updateStockData() - queryUpdatePrice query = " + queryUpdatePrice);
 		    	Log.i(TAG, "updateStockData() - queryUpdateVariation query = " + queryUpdateVariation);
+		    	Log.i(TAG, "updateStockData() - queryUpdateLastUpdated query = " + queryUpdateLastUpdated);
 		    	
 		    	db.execSQL(queryUpdatePrice);
 		    	db.execSQL(queryUpdateVariation);
+		    	db.execSQL(queryUpdateLastUpdated);
 		    } while (result.moveToNext());
 		    
 		    result.close();

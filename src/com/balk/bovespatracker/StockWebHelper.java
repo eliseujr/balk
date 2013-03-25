@@ -34,12 +34,15 @@ public class StockWebHelper {
     	// Creating URL to pull stock data from
     	String URL = URL_PREFIX + stockSymbol;
     	
+    	Log.i(TAG, "Fetching URL : " + URL);
+    	
     	// XML element names
     	String KEY_ITEM = "Papel";
     	String KEY_SYMBOL = "Codigo";
     	String KEY_NAME = "Nome";
     	String KEY_PRICE = "Ultimo";
     	String KEY_CHANGE = "Oscilacao";
+    	String KEY_DATE = "Data";
     	
     	XMLParser parser = new XMLParser();
     	String xml = parser.getXmlFromUrl(URL); // getting XML
@@ -55,10 +58,12 @@ public class StockWebHelper {
     		Log.i(TAG, "Nome = " + e.getAttribute(KEY_NAME));
     		Log.i(TAG, "Ultimo = " + e.getAttribute(KEY_PRICE));
     		Log.i(TAG, "Oscilacao = " + e.getAttribute(KEY_CHANGE));
+    		Log.i(TAG, "Data = " + e.getAttribute(KEY_DATE));
     		stockData.setStockSymbol(e.getAttribute(KEY_SYMBOL));
     		stockData.setStockName(e.getAttribute(KEY_NAME));
     		stockData.setStockPrice(e.getAttribute(KEY_PRICE));
-    		stockData.setStockVariation(e.getAttribute(KEY_CHANGE));	
+    		stockData.setStockVariation(e.getAttribute(KEY_CHANGE));
+    		stockData.setStockLastUpdated("Last updated " + e.getAttribute(KEY_DATE).substring(e.getAttribute(KEY_DATE).indexOf(' ')));
     	}
         
         return stockData;

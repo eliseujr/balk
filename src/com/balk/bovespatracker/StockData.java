@@ -11,14 +11,16 @@ public class StockData {
 	private String mStockName;
 	private String mStockPrice;
 	private String mStockVariation;
+	private String mStockLastUpdated;
 	
 	public StockData() {}
 	
-	public StockData(String stockSymbol, String stockName, String stockPrice, String stockVariation) {
+	public StockData(String stockSymbol, String stockName, String stockPrice, String stockVariation, String stockLastUpdated) {
 		mStockSymbol = stockSymbol;
 		mStockName = stockName;
 		mStockPrice = stockPrice;
-		mStockVariation = stockVariation;		
+		mStockVariation = stockVariation;
+		mStockLastUpdated = stockLastUpdated;
 	}
 	
 	public String getStockSymbol() {
@@ -37,6 +39,10 @@ public class StockData {
 		return mStockVariation;
 	}
 	
+	public String getStockLastUpdated() {
+		return mStockLastUpdated;
+	}
+	
 	public void setStockSymbol(String stockSymbol) {
 		mStockSymbol = stockSymbol;
 	}
@@ -52,6 +58,10 @@ public class StockData {
 	public void setStockVariation(String stockVariation) {
 		mStockVariation = stockVariation;
 	}
+
+	public void setStockLastUpdated(String stockLastUpdated) {
+		mStockLastUpdated = stockLastUpdated;
+	}
 	
 	public void debugStockDataObj( ) {
         Log.i(TAG, "-------------------------------");
@@ -60,6 +70,7 @@ public class StockData {
         Log.i(TAG, "Name = " + this.getStockName());
         Log.i(TAG, "Price = " + this.getStockPrice());
         Log.i(TAG, "variation = " + this.getStockVariation());
+        Log.i(TAG, "last_updated = " + this.getStockLastUpdated());
         Log.i(TAG, "-------------------------------");
         Log.i(TAG, "-------------------------------");
 	}
