@@ -23,16 +23,17 @@ public final class R {
         public static final int ic_remove=0x7f020003;
     }
     public static final class id {
-        public static final int LinearLayout01=0x7f080000;
-        public static final int add_stock=0x7f080008;
-        public static final int refresh=0x7f080009;
-        public static final int remove_stock=0x7f080007;
-        public static final int stockEditText=0x7f080001;
-        public static final int stockName=0x7f080005;
-        public static final int stockPrice=0x7f080004;
-        public static final int stockSymbol=0x7f080003;
-        public static final int stockVariation=0x7f080006;
-        public static final int stockrow=0x7f080002;
+        public static final int LinearLayout01=0x7f080001;
+        public static final int add_stock=0x7f080009;
+        public static final int lastUpdated=0x7f080000;
+        public static final int refresh=0x7f08000a;
+        public static final int remove_stock=0x7f080008;
+        public static final int stockEditText=0x7f080002;
+        public static final int stockName=0x7f080006;
+        public static final int stockPrice=0x7f080005;
+        public static final int stockSymbol=0x7f080004;
+        public static final int stockVariation=0x7f080007;
+        public static final int stockrow=0x7f080003;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;

@@ -237,7 +237,7 @@ public class BovespaTracker extends ListActivity {
 			StockData stockData = new StockData();
 			
 	        try {
-	        	stockData = stockData.getStockDataFromSymbol(stockSymbols[0]);
+	        	stockData = stockData.getStockDataFromSymbolFromBovespa(stockSymbols[0]);
 	        } catch (Exception e) {
 	        	e.printStackTrace();
 	        }
@@ -322,7 +322,7 @@ public class BovespaTracker extends ListActivity {
 	    	
 	    	for(StockData stock : allStocks) {
 	    		try {
-					stockUpdated = stockUpdated.getStockDataFromSymbol(stock.getStockSymbol());
+					stockUpdated = stockUpdated.getStockDataFromSymbolFromBovespa(stock.getStockSymbol());
 					// If stock price or variation have changed, update stock data
 					if (!(stock.getStockPrice().equals(stockUpdated.getStockPrice())) || 
 						!(stock.getStockVariation().equals(stockUpdated.getStockVariation()))) {

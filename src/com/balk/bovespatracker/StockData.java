@@ -64,7 +64,29 @@ public class StockData {
         Log.i(TAG, "-------------------------------");
 	}
 
-	public StockData getStockDataFromSymbol(String stockSymbol) throws Exception {
+	public StockData getStockDataFromSymbolFromBovespa(String stockSymbol) {
+
+		StockData stockData = StockWebHelper.getStockDataFromWEB(stockSymbol);
+		
+		return stockData;
+	}
+
+	public StockData[] getStockDataFromSymbolsFromBovespa(String... stockSymbols) {
+		// Checking if stockSymbols is empty
+		if (stockSymbols.length == 0)
+			return null;
+		
+		int i = 0;
+		StockData[] stockDataArray = new StockData[stockSymbols.length];
+    
+        for (String stockSymbol : stockSymbols) {
+				stockDataArray[i++] = StockWebHelper.getStockDataFromWEB(stockSymbol);
+        }
+
+        return stockDataArray;
+	}
+	
+	public StockData getStockDataFromSymbolFromYahoo(String stockSymbol) throws Exception {
 
 		URL url = StockYQLHelper.createYQLUrl(stockSymbol);
 		StockData stockData = StockYQLHelper.getStockDataFromYQL(StockYQLHelper.getUrlContent(url));
@@ -72,7 +94,7 @@ public class StockData {
 		return stockData;
 	}
 	
-	public StockData[] getStockDataFromSymbols(String... stockSymbols) throws Exception {
+	public StockData[] getStockDataFromSymbolsFromYahoo(String... stockSymbols) throws Exception {
 		// Checking if stockSymbols is empty
 		if (stockSymbols.length == 0)
 			return null;
